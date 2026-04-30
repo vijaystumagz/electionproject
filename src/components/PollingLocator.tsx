@@ -1,19 +1,18 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, FormEvent, ChangeEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Navigation, MapPin, ExternalLink } from 'lucide-react';
 
-const MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+const MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
-const PollingLocator = () => {
-  const [zipcode, setZipcode] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [mapQuery, setMapQuery] = useState('');
-  const [inputError, setInputError] = useState('');
+const PollingLocator: React.FC = () => {
+  const [zipcode, setZipcode] = useState<string>('');
+  const [submitted, setSubmitted] = useState<boolean>(false);
+  const [mapQuery, setMapQuery] = useState<string>('');
+  const [inputError, setInputError] = useState<string>('');
 
-  const validateZip = (zip) => /^\d{5}(-\d{4})?$/.test(zip.trim());
+  const validateZip = (zip: string): boolean => /^\d{5}(-\d{4})?$/.test(zip.trim());
 
-  const handleSearch = (e) => {
+  const handleSearch = (e: FormEvent): void => {
     e.preventDefault();
     const trimmed = zipcode.trim();
 
@@ -29,6 +28,11 @@ const PollingLocator = () => {
     setInputError('');
     setMapQuery(`polling+place+near+${encodeURIComponent(trimmed)}`);
     setSubmitted(true);
+  };
+
+  const handleZipChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    setZipcode(e.target.value);
+    setInputError('');
   };
 
   const hasApiKey = MAPS_API_KEY && !MAPS_API_KEY.includes('PLACEHOLDER');
@@ -63,7 +67,7 @@ const PollingLocator = () => {
               pattern="[0-9]*"
               placeholder="Enter your ZIP Code (e.g. 90210)"
               value={zipcode}
-              onChange={(e) => { setZipcode(e.target.value); setInputError(''); }}
+              onChange={handleZipChange}
               maxLength={10}
               aria-describedby={inputError ? 'zip-error' : undefined}
               aria-invalid={!!inputError}
@@ -137,4 +141,4 @@ const PollingLocator = () => {
   );
 };
 
-export default PollingLocator;
+export default React.memo(PollingLocator);

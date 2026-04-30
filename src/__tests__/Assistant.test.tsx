@@ -2,15 +2,16 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Assistant from '../components/Assistant';
+import React from 'react';
 
 // Mock framer-motion to prevent animation issues in tests
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }) => <div {...props}>{children}</div>,
-    button: ({ children, ...props }) => <button {...props}>{children}</button>,
-    span: ({ children, ...props }) => <span {...props}>{children}</span>,
+    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
+    button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+    span: ({ children, ...props }: any) => <span {...props}>{children}</span>,
   },
-  AnimatePresence: ({ children }) => <>{children}</>,
+  AnimatePresence: ({ children }: any) => <>{children}</>,
 }));
 
 vi.mock('../utils/firebase', () => ({
@@ -18,6 +19,11 @@ vi.mock('../utils/firebase', () => ({
 }));
 
 describe('Assistant Component', () => {
+  it('renders correctly (snapshot)', () => {
+    const { asFragment } = render(<Assistant />);
+    expect(asFragment()).toMatchSnapshot();
+  });
+
   it('renders the assistant header', () => {
     render(<Assistant />);
     expect(screen.getByText('Elexia Assistant')).toBeDefined();

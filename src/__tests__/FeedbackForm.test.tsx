@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import FeedbackForm from '../components/FeedbackForm';
+import React from 'react';
 
 // Mock firebase module
 vi.mock('../utils/firebase', () => ({
@@ -17,7 +18,7 @@ describe('FeedbackForm', () => {
 
   it('disables submit button when textarea is empty', () => {
     render(<FeedbackForm />);
-    const btn = screen.getByRole('button', { name: /submit feedback/i });
+    const btn = screen.getByRole('button', { name: /submit feedback/i }) as HTMLButtonElement;
     expect(btn.disabled).toBe(true);
   });
 
@@ -25,20 +26,24 @@ describe('FeedbackForm', () => {
     render(<FeedbackForm />);
     const textarea = screen.getByRole('textbox', { name: /your feedback/i });
     await userEvent.type(textarea, 'Hi');
-    fireEvent.submit(screen.getByRole('form', { hidden: true }) || textarea.closest('form'));
+    const form = textarea.closest('form');
+    if (form) fireEvent.submit(form);
+    
     await waitFor(() => {
       expect(screen.getByRole('alert')).toBeDefined();
     });
   });
 
   it('shows success message after successful submission', async () => {
-    const { submitFeedback } = await import('../utils/firebase');
-    submitFeedback.mockResolvedValue(true);
+    const firebase = await import('../utils/firebase');
+    const mockSubmit = firebase.submitFeedback as any;
+    mockSubmit.mockResolvedValue(true);
     
     render(<FeedbackForm />);
     const textarea = screen.getByRole('textbox', { name: /your feedback/i });
     await userEvent.type(textarea, 'This is great feedback from a test!');
-    fireEvent.submit(textarea.closest('form'));
+    const form = textarea.closest('form');
+    if (form) fireEvent.submit(form);
     
     await waitFor(() => {
       expect(screen.getByRole('status')).toBeDefined();

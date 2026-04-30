@@ -1,15 +1,56 @@
 // Election Assistant Logic Engine
 
-export const INITIAL_STATE = 'greeting';
+export type StateKey = 
+  | 'greeting' 
+  | 'registered_check' 
+  | 'registered_no' 
+  | 'show_registration' 
+  | 'registered_yes' 
+  | 'knows_location' 
+  | 'polling_location' 
+  | 'timeline' 
+  | 'voting_methods' 
+  | 'mail_in' 
+  | 'in_person' 
+  | 'other_topics' 
+  | 'voter_id' 
+  | 'poll_worker' 
+  | 'feedback_prompt' 
+  | 'leave_feedback'
+  | 'ask_ai';
 
-export const chatLogic = {
+export interface Option {
+  label: string;
+  nextState: StateKey;
+}
+
+export interface StateData {
+  message: string;
+  options: Option[];
+  component?: string;
+  isInput?: boolean;
+}
+
+export type ChatLogic = Record<StateKey, StateData>;
+
+export const INITIAL_STATE: StateKey = 'greeting';
+
+export const chatLogic: ChatLogic = {
   greeting: {
     message: "Hi there! I'm Elexia. I'm here to help you navigate the voting process. What do you need help with today?",
     options: [
       { label: "Am I registered?", nextState: "registered_check" },
       { label: "Ways to Vote", nextState: "voting_methods" },
       { label: "Find Polling Place", nextState: "polling_location" },
+      { label: "Ask Elexia AI", nextState: "ask_ai" },
       { label: "Other Topics", nextState: "other_topics" }
+    ]
+  },
+  ask_ai: {
+    message: "I can help with complex questions using my AI brain. What would you like to ask me about the election?",
+    isInput: true,
+    options: [
+      { label: "Main Menu", nextState: "greeting" }
     ]
   },
   registered_check: {
@@ -49,7 +90,7 @@ export const chatLogic = {
   },
   polling_location: {
     message: "Let's find your polling location.",
-    component: 'PollingLocator', // Flags UI to render the component
+    component: 'PollingLocator',
     options: [
       { label: "Ways to Vote", nextState: "voting_methods" },
       { label: "Main Menu", nextState: "greeting" }
@@ -57,7 +98,7 @@ export const chatLogic = {
   },
   timeline: {
     message: "Here are the key dates for the upcoming election.",
-    component: 'Timeline', // Flags UI to render the Timeline
+    component: 'Timeline',
     options: [
       { label: "Ways to Vote", nextState: "voting_methods" },
       { label: "Main Menu", nextState: "greeting" }
@@ -65,7 +106,7 @@ export const chatLogic = {
   },
   voting_methods: {
     message: "There are three main ways to cast your ballot. Which one are you interested in?",
-    component: 'VotingMethods', // New component
+    component: 'VotingMethods',
     options: [
       { label: "Tell me about Mail-in", nextState: "mail_in" },
       { label: "In-Person Voting", nextState: "in_person" },

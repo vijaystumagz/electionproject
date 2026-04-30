@@ -1,9 +1,13 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Bot, User } from 'lucide-react';
 import { SENDER, ARIA } from '../constants';
 
-const MessageBubble = ({ sender, text }) => {
+interface MessageBubbleProps {
+  sender: string;
+  text: string;
+}
+
+const MessageBubble: React.FC<MessageBubbleProps> = ({ sender, text }) => {
   const isUser = sender === SENDER.USER;
 
   return (
@@ -44,9 +48,4 @@ const MessageBubble = ({ sender, text }) => {
   );
 };
 
-MessageBubble.propTypes = {
-  sender: PropTypes.oneOf([SENDER.BOT, SENDER.USER]).isRequired,
-  text: PropTypes.string.isRequired,
-};
-
-export default MessageBubble;
+export default React.memo(MessageBubble);

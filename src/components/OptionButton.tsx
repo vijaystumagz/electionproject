@@ -1,9 +1,14 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { motion } from 'framer-motion';
 import { ChevronRight } from 'lucide-react';
 
-const OptionButton = ({ label, onClick, index }) => (
+interface OptionButtonProps {
+  label: string;
+  onClick: () => void;
+  index: number;
+}
+
+const OptionButton: React.FC<OptionButtonProps> = ({ label, onClick, index }) => (
   <motion.button
     initial={{ opacity: 0, x: -10 }}
     animate={{ opacity: 1, x: 0 }}
@@ -19,10 +24,4 @@ const OptionButton = ({ label, onClick, index }) => (
   </motion.button>
 );
 
-OptionButton.propTypes = {
-  label: PropTypes.string.isRequired,
-  onClick: PropTypes.func.isRequired,
-  index: PropTypes.number.isRequired,
-};
-
-export default OptionButton;
+export default React.memo(OptionButton);

@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Bot } from 'lucide-react';
 
-const TypingIndicator = () => (
+const TypingIndicator: React.FC = () => (
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
@@ -36,4 +36,4 @@ const TypingIndicator = () => (
   </motion.div>
 );
 
-export default TypingIndicator;
+export default React.memo(TypingIndicator);

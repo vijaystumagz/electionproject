@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, ReactElement, FormEvent } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Bot, Volume2, VolumeX } from 'lucide-react';
-import { chatLogic } from '../utils/logicEngine';
+import { Bot, Volume2, VolumeX, Send } from 'lucide-react';
+import { chatLogic, StateKey, Option } from '../utils/logicEngine';
 import { INITIAL_STATE, SENDER, COMPONENTS, ARIA } from '../constants';
+import { getAIResponse } from '../utils/ai';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
 import OptionButton from './OptionButton';
@@ -11,13 +12,23 @@ import PollingLocator from './PollingLocator';
 import VotingMethods from './VotingMethods';
 import FeedbackForm from './FeedbackForm';
 
-const Assistant = () => {
-  const [history, setHistory] = useState([]);
-  const [isTyping, setIsTyping] = useState(false);
-  const [ttsEnabled, setTtsEnabled] = useState(false);
-  const chatContainerRef = useRef(null);
+interface Message {
+  id: string;
+  sender: string;
+  text: string;
+  component?: string;
+  options?: Option[] | null;
+  isInput?: boolean;
+}
 
-  const speakText = useCallback((text) => {
+const Assistant: React.FC = (): ReactElement => {
+  const [history, setHistory] = useState<Message[]>([]);
+  const [isTyping, setIsTyping] = useState<boolean>(false);
+  const [ttsEnabled, setTtsEnabled] = useState<boolean>(false);
+  const [userInput, setUserInput] = useState<string>('');
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+
+  const speakText = useCallback((text: string): void => {
     if (!ttsEnabled || !window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -26,7 +37,7 @@ const Assistant = () => {
     window.speechSynthesis.speak(utterance);
   }, [ttsEnabled]);
 
-  const addBotMessage = useCallback((stateKey) => {
+  const addBotMessage = useCallback((stateKey: StateKey): void => {
     setIsTyping(true);
     setTimeout(() => {
       const stateData = chatLogic[stateKey];
@@ -40,6 +51,7 @@ const Assistant = () => {
           text: stateData.message,
           component: stateData.component,
           options: stateData.options,
+          isInput: stateData.isInput,
         },
       ]);
       setIsTyping(false);
@@ -49,7 +61,7 @@ const Assistant = () => {
 
   useEffect(() => {
     addBotMessage(INITIAL_STATE);
-  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [addBotMessage]);
 
   useEffect(() => {
     if (history.length > 1 || (isTyping && history.length > 0)) {
@@ -60,10 +72,13 @@ const Assistant = () => {
     }
   }, [history, isTyping]);
 
-  const handleOptionClick = useCallback((option) => {
+  const handleOptionClick = useCallback((option: Option): void => {
     setHistory((prev) => {
       const updated = [...prev];
-      if (updated.length > 0) updated[updated.length - 1] = { ...updated[updated.length - 1], options: null };
+      if (updated.length > 0) {
+        const lastMsg = updated[updated.length - 1];
+        updated[updated.length - 1] = { ...lastMsg, options: null, isInput: false };
+      }
       return [
         ...updated,
         { id: `${Date.now()}-user`, sender: SENDER.USER, text: option.label },
@@ -72,12 +87,50 @@ const Assistant = () => {
     addBotMessage(option.nextState);
   }, [addBotMessage]);
 
-  const toggleTts = () => {
+  const handleAISubmit = async (e: FormEvent): Promise<void> => {
+    e.preventDefault();
+    if (!userInput.trim()) return;
+
+    const query = userInput.trim();
+    setUserInput('');
+
+    setHistory((prev) => {
+      const updated = [...prev];
+      if (updated.length > 0) {
+        const lastMsg = updated[updated.length - 1];
+        updated[updated.length - 1] = { ...lastMsg, options: null, isInput: false };
+      }
+      return [
+        ...updated,
+        { id: `${Date.now()}-user`, sender: SENDER.USER, text: query },
+      ];
+    });
+
+    setIsTyping(true);
+    const aiResponse = await getAIResponse(query);
+    
+    setHistory((prev) => [
+      ...prev,
+      {
+        id: `${Date.now()}-bot`,
+        sender: SENDER.BOT,
+        text: aiResponse,
+        options: [{ label: "Back to Menu", nextState: "greeting" }],
+        isInput: false,
+      },
+    ]);
+    setIsTyping(false);
+    speakText(aiResponse);
+  };
+
+  const toggleTts = (): void => {
     setTtsEnabled((prev) => {
       if (prev && window.speechSynthesis) window.speechSynthesis.cancel();
       return !prev;
     });
   };
+
+  const lastMessage = history[history.length - 1];
 
   return (
     <div className="container" style={{ paddingTop: '40px', paddingBottom: '40px' }}>
@@ -150,7 +203,7 @@ const Assistant = () => {
                   >
                     {msg.options.map((opt, idx) => (
                       <OptionButton
-                        key={opt.nextState}
+                        key={`${opt.nextState}-${idx}`}
                         label={opt.label}
                         index={idx}
                         onClick={() => handleOptionClick(opt)}
@@ -164,6 +217,42 @@ const Assistant = () => {
 
           {isTyping && <TypingIndicator />}
         </div>
+
+        {/* AI Input Area */}
+        {lastMessage?.isInput && !isTyping && (
+          <motion.form
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            onSubmit={handleAISubmit}
+            style={{
+              padding: '20px',
+              borderTop: '1px solid var(--border-light)',
+              display: 'flex',
+              gap: '12px',
+              background: 'rgba(255, 255, 255, 0.02)'
+            }}
+          >
+            <input
+              type="text"
+              value={userInput}
+              onChange={(e) => setUserInput(e.target.value)}
+              placeholder="Type your question here..."
+              style={{
+                flex: 1,
+                padding: '12px 16px',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-light)',
+                borderRadius: 'var(--radius-sm)',
+                color: 'var(--text-primary)',
+                fontFamily: 'inherit',
+                outline: 'none'
+              }}
+            />
+            <button type="submit" className="btn btn-primary" disabled={!userInput.trim()}>
+              <Send size={18} />
+            </button>
+          </motion.form>
+        )}
       </section>
     </div>
   );

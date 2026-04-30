@@ -2,18 +2,24 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Calendar, CheckCircle2, Download } from 'lucide-react';
 
-const events = [
+interface TimelineEvent {
+  date: string;
+  title: string;
+  status: 'past' | 'current' | 'upcoming';
+}
+
+const events: TimelineEvent[] = [
   { date: 'Oct 7', title: 'Voter Registration Deadline', status: 'past' },
   { date: 'Oct 20', title: 'Early Voting Begins', status: 'current' },
   { date: 'Nov 1', title: 'Mail-in Ballot Request Deadline', status: 'upcoming' },
   { date: 'Nov 5', title: 'Election Day', status: 'upcoming' }
 ];
 
-const Timeline = () => {
+const Timeline: React.FC = () => {
   return (
     <div className="glass-card" style={{ padding: '24px', width: '100%', maxWidth: '400px' }}>
       <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        <Calendar size={20} className="text-gradient" /> Key Dates
+        <Calendar size={20} className="text-gradient" aria-hidden="true" /> Key Dates
       </h3>
       
       <div style={{ position: 'relative', paddingLeft: '20px' }}>
@@ -21,7 +27,7 @@ const Timeline = () => {
         <div style={{
           position: 'absolute', left: '7px', top: '10px', bottom: '10px', width: '2px',
           background: 'var(--border-light)'
-        }}></div>
+        }} aria-hidden="true"></div>
 
         {events.map((evt, idx) => (
           <motion.div 
@@ -39,7 +45,7 @@ const Timeline = () => {
                           evt.status === 'current' ? 'var(--primary)' : 'var(--text-secondary)',
               boxShadow: evt.status === 'current' ? '0 0 10px var(--primary-glow)' : 'none',
               zIndex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}>
+            }} aria-hidden="true">
               {evt.status === 'past' && <CheckCircle2 size={12} color="var(--text-muted)" />}
             </div>
 
@@ -60,11 +66,12 @@ const Timeline = () => {
         className="btn btn-outline" 
         style={{ width: '100%', marginTop: '20px', padding: '10px' }}
         onClick={() => alert("Mock: Event added to your calendar!")}
+        aria-label="Add key election dates to your calendar"
       >
-        <Download size={16} /> Add to Calendar
+        <Download size={16} aria-hidden="true" /> Add to Calendar
       </motion.button>
     </div>
   );
 };
 
-export default Timeline;
+export default React.memo(Timeline);

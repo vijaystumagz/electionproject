@@ -1,26 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import { motion } from 'framer-motion';
 import { Send, CheckCircle, AlertCircle } from 'lucide-react';
 import { submitFeedback } from '../utils/firebase';
 import { FEEDBACK_MAX_LENGTH } from '../constants';
 
+type Status = 'idle' | 'submitting' | 'success' | 'error';
+
 /**
  * Sanitizes user input: trims whitespace, strips dangerous HTML characters.
  */
-const sanitize = (str) =>
+const sanitize = (str: string): string =>
   str
     .trim()
     .slice(0, FEEDBACK_MAX_LENGTH)
-    .replace(/[<>"'&]/g, (c) => ({ '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '&': '&amp;' }[c]));
+    .replace(/[<>"'&]/g, (c) => ({
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+      '&': '&amp;'
+    }[c] || c));
 
-const FeedbackForm = () => {
-  const [text, setText] = useState('');
-  const [status, setStatus] = useState('idle'); // idle | submitting | success | error
-  const [validationError, setValidationError] = useState('');
+const FeedbackForm: React.FC = () => {
+  const [text, setText] = useState<string>('');
+  const [status, setStatus] = useState<Status>('idle');
+  const [validationError, setValidationError] = useState<string>('');
 
   const remaining = FEEDBACK_MAX_LENGTH - text.length;
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
     const clean = sanitize(text);
 
@@ -37,6 +45,11 @@ const FeedbackForm = () => {
     setStatus('submitting');
     const success = await submitFeedback(clean);
     setStatus(success ? 'success' : 'error');
+  };
+
+  const handleTextChange = (e: ChangeEvent<HTMLTextAreaElement>): void => {
+    setText(e.target.value);
+    setValidationError('');
   };
 
   if (status === 'success') {
@@ -73,7 +86,7 @@ const FeedbackForm = () => {
         <textarea
           id="feedback-input"
           value={text}
-          onChange={(e) => { setText(e.target.value); setValidationError(''); }}
+          onChange={handleTextChange}
           placeholder="Tell us what you think... (min. 5 characters)"
           maxLength={FEEDBACK_MAX_LENGTH}
           aria-describedby={validationError ? 'feedback-error' : 'feedback-hint'}
@@ -123,4 +136,4 @@ const FeedbackForm = () => {
   );
 };
 
-export default FeedbackForm;
+export default React.memo(FeedbackForm);
