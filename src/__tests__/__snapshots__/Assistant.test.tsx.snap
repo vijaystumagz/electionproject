@@ -11,7 +11,7 @@ exports[`Assistant Component > renders correctly (snapshot) 1`] = `
       class="glass-panel"
       style="max-width: 800px; margin: 0px auto; height: 620px; display: flex; flex-direction: column;"
     >
-      <div
+      <header
         style="padding: 20px; border-bottom: 1px solid var(--border-light); display: flex; align-items: center; justify-content: space-between;"
       >
         <div
@@ -107,7 +107,7 @@ exports[`Assistant Component > renders correctly (snapshot) 1`] = `
             />
           </svg>
         </button>
-      </div>
+      </header>
       <div
         aria-label="Elexia Election Assistant Chat"
         aria-live="polite"

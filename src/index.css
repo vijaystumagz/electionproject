@@ -2,29 +2,28 @@
 
 :root {
   /* Dark Mode Premium Palette */
-  --bg-base: #0f1115;
-  --bg-surface: #1a1d24;
-  --bg-surface-glass: rgba(26, 29, 36, 0.6);
+  --bg-base: #0f172a;
+  --bg-surface: #1e293b;
+  --bg-surface-glass: rgba(30, 41, 59, 0.7);
   --bg-surface-glass-light: rgba(255, 255, 255, 0.05);
   
-  --primary: #6366f1; /* Indigo */
-  --primary-glow: rgba(99, 102, 241, 0.4);
-  --secondary: #8b5cf6; /* Violet */
-  --accent: #ec4899; /* Pink */
+  --primary: #818cf8; /* Indigo 400 - Better contrast on dark */
+  --primary-glow: rgba(129, 140, 248, 0.15);
+  --secondary: #c084fc; /* Purple 400 */
+  --accent: #22d3ee; /* Cyan 400 */
   
   --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --text-muted: #64748b;
+  --text-secondary: #cbd5e1; /* Slate 300 - Much better contrast than Slate 400 */
+  --text-muted: #94a3b8;
   
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-focus: rgba(99, 102, 241, 0.5);
+  --border-light: rgba(255, 255, 255, 0.1);
+  --border-focus: rgba(129, 140, 248, 0.4);
   
   --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.15);
   --shadow-glow: 0 0 20px var(--primary-glow);
   
   --radius-sm: 8px;
-  --radius-md: 12px;
   --radius-lg: 20px;
   --radius-full: 9999px;
   
@@ -108,16 +107,17 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  padding: 12px 24px;
-  border-radius: var(--radius-full);
+  padding: 10px 24px;
+  min-height: 44px; /* WCAG standard for touch targets */
+  min-width: 44px;
+  border-radius: var(--radius-sm);
   font-weight: 600;
-  font-size: 1rem;
   cursor: pointer;
-  transition: all var(--transition-normal);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
+  font-family: inherit;
+  font-size: 0.95rem;
   outline: none;
-  position: relative;
-  overflow: hidden;
 }
 
 .btn-primary {

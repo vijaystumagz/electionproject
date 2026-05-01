@@ -1,5 +1,6 @@
 import React from 'react';
 import Assistant from './components/Assistant';
+import ErrorBoundary from './components/ErrorBoundary';
 import { Vote } from 'lucide-react';
 
 function App() {
@@ -76,8 +77,10 @@ function App() {
             </p>
           </section>
 
-          {/* Assistant Interface */}
-          <Assistant />
+          {/* Assistant Interface with Resilience */}
+          <ErrorBoundary>
+            <Assistant />
+          </ErrorBoundary>
         </main>
 
         {/* Footer */}

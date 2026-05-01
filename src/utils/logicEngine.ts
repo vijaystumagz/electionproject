@@ -1,5 +1,9 @@
-// Election Assistant Logic Engine
+/**
+ * @file logicEngine.ts
+ * @description The finite state machine (FSM) defining the chat flow and content for Elexia.
+ */
 
+/** Valid states in the chat conversation tree. */
 export type StateKey = 
   | 'greeting' 
   | 'registered_check' 
@@ -19,22 +23,34 @@ export type StateKey =
   | 'leave_feedback'
   | 'ask_ai';
 
+/** Interface for a conversational response option. */
 export interface Option {
   label: string;
   nextState: StateKey;
 }
 
+/** Interface for a single state's data/content. */
 export interface StateData {
+  /** The message text the bot will display. */
   message: string;
+  /** List of buttons/options the user can click. */
   options: Option[];
+  /** Optional: ID of a custom React component to render alongside the message. */
   component?: string;
+  /** Optional: If true, the UI will show a free-text input field. */
   isInput?: boolean;
 }
 
+/** The full chat logic configuration object. */
 export type ChatLogic = Record<StateKey, StateData>;
 
+/** The state the assistant starts in when the app loads. */
 export const INITIAL_STATE: StateKey = 'greeting';
 
+/**
+ * Static configuration of the Elexia Assistant's conversational states.
+ * This acts as the source of truth for all guided paths.
+ */
 export const chatLogic: ChatLogic = {
   greeting: {
     message: "Hi there! I'm Elexia. I'm here to help you navigate the voting process. What do you need help with today?",
